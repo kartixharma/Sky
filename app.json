@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "test",
+    "name": "SkySnap",
     "slug": "test",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -19,7 +19,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.kartixharma.test"
     },
     "web": {
       "bundler": "metro",
@@ -31,6 +32,14 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "b36d9460-4897-46ea-b02c-71145e5a5964"
+      }
     }
   }
 }
