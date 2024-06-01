@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Dimensions, StyleSheet, View, ActivityIndicator, ScrollView, Text } from 'react-native';
+import { StyleSheet, View, ActivityIndicator, Text } from 'react-native';
 import { LineChart } from "react-native-gifted-charts"
 import { BlurView } from 'expo-blur';
 import { screenWidth } from 'react-native-gifted-charts/src/utils';
@@ -34,7 +34,7 @@ const TemperatureGraph = ({forecastday}) => {
   if (!forecastData) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0000ff" />
+        <ActivityIndicator size="large" color="black" />
       </View>
     );
   }
@@ -48,61 +48,40 @@ const TemperatureGraph = ({forecastday}) => {
 
   return (
     <BlurView style={styles.container} tint='dark' intensity={50}>
-      <Text></Text>
+      <View style={{flexDirection: 'row', alignItems: 'center'}}>
+        <View style={{height: 10, width: 10, backgroundColor: 'orange', borderRadius: 100, marginHorizontal: 10}}></View>
+        <Text style={{fontSize: 16, color: '#ffffff'}}>Average Temperature</Text>
+      </View>
+      <View style={{flexDirection: 'row', alignItems: 'center'}}>
+        <View style={{height: 10, width: 10, backgroundColor: '#706bff', borderRadius: 100, margin: 10}}></View>
+        <Text style={{fontSize: 16, color: '#ffffff'}}>Chance of Rain</Text>
+      </View>
         <LineChart
             areaChart
             curved
-            rotateLabel
             data={lineData}
             data2={lineData2}
             xAxisLabelTexts={labels}
             height={180}
             hideYAxisText
             hideAxesAndRules
-            spacing={screenWidth/10}
-            xAxisLabelTextStyle={{color: 'lightgray'}}
-            initialSpacing={0}
+            spacing={screenWidth/8}
+            xAxisLabelTextStyle={{color: 'white', fontSize: 12, fontWeight: 'bold'}}
+            initialSpacing={20}
             color1="orange"
             color2="#706bff"
-            textColor1="green"
+            textColor1="white"
+            textColor2='white'
+            textShiftY={-5}
+            textShiftX={-5}
+            textFontSize={12}
             dataPointsColor1="orange"
             dataPointsColor2="#706bff"
+            showValuesAsDataPointsText
             startFillColor1="orange"
             startFillColor2="#706bff"
             startOpacity={0.8}
             endOpacity={0}
-            pointerConfig={{
-              pointerStripHeight: 180,
-              pointerStripColor: 'lightgray',
-              pointerStripWidth: 1,
-              pointerColor: 'lightgray',
-              radius: 4,
-              pointerLabelWidth: 100,
-              pointerLabelHeight: 90,
-              activatePointersOnLongPress: true,
-              autoAdjustPointerLabelPosition: false,
-              pointerLabelComponent: items => {
-                return (
-                  <View
-                    style={{
-                      height: 90,
-                      width: 80,
-                      justifyContent: 'center',
-                      marginTop: 40,
-                      marginLeft: 10,
-                    }}>
-                    <Text style={{color: 'white', fontSize: 14, marginBottom:6,textAlign:'center'}}>
-                      {items[0].date}
-                    </Text>
-                    <View style={{paddingHorizontal:14,paddingVertical:6, borderRadius:16, backgroundColor:'white'}}>
-                    <Text style={{ fontWeight: 'bold', textAlign: 'center' }}>
-                      {`${items[0].value.toFixed(1)} ℃ ${items[1].value.toFixed(1)*10/2}%`}
-                    </Text>
-                    </View>
-                  </View>
-                );
-              },
-            }}
             />
     </BlurView>
   );
@@ -121,12 +100,6 @@ const styles = StyleSheet.create({
     width: '100%',
     borderRadius: 24,
   },
-  scrollContainer: {
-    borderRadius: 24,
-  },
-  graph: {
-    borderRadius: 24,
-  }
 });
 
 export default TemperatureGraph;

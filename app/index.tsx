@@ -5,17 +5,19 @@ import Forcast from './forcast'
 import TemperatureGraph from './graph'
 import axios from 'axios'
 import Ionicons from '@expo/vector-icons/Ionicons'
+import * as Location from 'expo-location';
 
 const YourComponent = () => {
   const [weatherData, setWeatherData] = useState(null)
   const [query, setQuery] = useState('')
   const [locations, setLocations] = useState([])
-  const [selectedLocation, setSelectedLocation] = useState('Bengaluru')
+  const [selectedLocation, setSelectedLocation] = useState('')
   const [loading, setLoading] = useState(false)
   const screenWidth = Dimensions.get('window').width
   const [activeSlide, setActiveSlide] = useState(0)
   const [activeSlide1, setActiveSlide1] = useState(0)
   const [date, setDate] = useState('Today')
+  
 
   const handleScroll = (event) => {
     const slideIndex = Math.round(event.nativeEvent.contentOffset.x / (screenWidth*0.9 - 30));
@@ -70,11 +72,8 @@ const formatDateTime = (timestamp) => {
       setLoading(true);
       const response = await fetch(`https://api.weatherapi.com/v1/forecast.json?key=503fb227aaa9419190d190929243105&q=${Name}&days=10&aqi=yes&alerts=no`);
       const data = await response.json();
-      if (data.cod === "404") {
-        Alert.alert("Error", "City not found");
-      } else {
-        setWeatherData(data);
-      }
+      setWeatherData(data);
+      
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
@@ -88,7 +87,29 @@ const formatDateTime = (timestamp) => {
   }
 
   useEffect(() => {
-    fetchData(selectedLocation)
+    const fetchCurrentLocation = async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission to access location was denied');
+        return;
+      }
+
+      let location = await Location.getCurrentPositionAsync({});
+
+      let geocode = await Location.reverseGeocodeAsync({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      });
+      setSelectedLocation(`${geocode[0].city}, ${geocode[0].region}`);
+    };
+
+    fetchCurrentLocation();
+  }, []);
+
+  useEffect(() => {
+    if (selectedLocation) {
+      fetchData(selectedLocation);
+    }
   }, [selectedLocation]);
 
   const getLocalIcon = (iconCode, is_day) => {
@@ -110,6 +131,7 @@ const formatDateTime = (timestamp) => {
       '1195': is_day==1 ? require('../assets/images/09d.png') : require('../assets/images/09n.png'),
       '1276': is_day==1 ? require('../assets/images/11d.png') : require('../assets/images/11n.png'),
       '1273': is_day==1 ? require('../assets/images/1087.png') : require('../assets/images/11n.png'),
+      '1243': is_day==1 ? require('../assets/images/10d.png') : require('../assets/images/10n.png'),
       '1216': is_day==1 ? require('../assets/images/13d.png') : require('../assets/images/13d.png'),
     }
     return iconMap[iconCode];
@@ -168,7 +190,7 @@ const formatDateTime = (timestamp) => {
             intensity={50}
             experimentalBlurMethod='dimezisBlurView'
           >
-            <Text style={styles.location}>{weatherData.location.name}, {(weatherData.location.region).split(' ').map(word => word.charAt(0))}, {weatherData.location.country}</Text>
+            <Text style={styles.location}>{weatherData.location.name}, {weatherData.location.country}</Text>
             <FlatList
             contentContainerStyle={{marginBottom: -10}}
               data={[
@@ -214,6 +236,7 @@ const formatDateTime = (timestamp) => {
                   />
                   <Text style={styles.temperature}>{item.temp}</Text>
                   <Text style={styles.weatherDescription}>{item.desc}</Text>
+                  
                   </View>
                 )
               } else if(item.type=='sun') {
@@ -334,7 +357,7 @@ const formatDateTime = (timestamp) => {
                       </View>
                   </View>
                 )
-              }else {
+              }else{
                 return(
                   <View style={{
                     flexDirection: 'row',
@@ -378,7 +401,10 @@ const formatDateTime = (timestamp) => {
           </View>
         </ImageBackground>
       ) : (
-        <ActivityIndicator size="large" color="#ffffff" />
+        <View>
+        <ActivityIndicator size='large' color="gray" />
+        <Text style={{fontSize: 24, fontWeight: '500', color: 'gray'}}>Fetching Data...</Text>
+        </View>
       )}
     </SafeAreaView>
   );
