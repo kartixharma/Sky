@@ -48,7 +48,7 @@ const YourComponent = () => {
     try {
       const response = await axios.get(`https://api.weatherapi.com/v1/search.json`, {
         params: {
-          key: 'b955da5b8c77440fa29125936242105',
+          key: '503fb227aaa9419190d190929243105',
           q: searchQuery
         }
       });
@@ -124,6 +124,7 @@ const YourComponent = () => {
             tint='dark'
             intensity={50}
           >
+          <Ionicons name="search" size={20} color="white" />
         <TextInput
           style={styles.input}
           placeholderTextColor={'white'}
@@ -143,6 +144,7 @@ const YourComponent = () => {
       {locations.length > 0 && (
           <View style={styles.overlay}>
             <FlatList
+              keyboardShouldPersistTaps='always'
               data={locations}
               keyExtractor={(item) => item.id.toString()}
               renderItem={({ item }) => (
@@ -349,6 +351,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 30
   },
   input: {
+    flex: 1,
     left: 5,
     height: 50,
     fontSize: 16,

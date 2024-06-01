@@ -33,7 +33,7 @@ const formatDateTime = (dateTime) => {
     return { formattedDate, formattedTime };
 };
 
-const SimpleBlurDialog = ({ visible, onClose, weatherData }) => {
+const WeatherDialog = ({ visible, onClose, weatherData }) => {
     const [activeSlide, setActiveSlide] = useState(0);
     const screenWidth = Dimensions.get('window').width;
     const { formattedDate, formattedTime } = formatDateTime(weatherData.dt_txt);
@@ -60,6 +60,7 @@ const SimpleBlurDialog = ({ visible, onClose, weatherData }) => {
             tint='dark'
             intensity={50}
             experimentalBlurMethod='dimezisBlurView'
+            blurReductionFactor={2}
           >
             <Text style={{fontSize: 24, fontWeight: '500', color: '#ffffff',}}>{formattedTime}, {formattedDate}</Text>
             <View style={{width: screenWidth * 0.9 - 30, alignItems: 'center', justifyContent: 'center'}}>
@@ -180,7 +181,7 @@ const WeatherCard = React.memo(({ item }) => {
                 <Text style={styles.pop}>{(item.pop * 100).toFixed(0)} %</Text>
                 <Text style={styles.temp}>{kelvinToCelsius(item.main.temp)} °C</Text>
             </BlurView>
-            <SimpleBlurDialog visible={dialogVisible} weatherData={item}onClose={() => setDialogVisible(false)} />
+            <WeatherDialog visible={dialogVisible} weatherData={item}onClose={() => setDialogVisible(false)} />
         </TouchableOpacity>
     );
 });

@@ -1,9 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { Dimensions, StyleSheet, View, ActivityIndicator, ScrollView } from 'react-native';
-import { Canvas, Path, Group, Text } from '@shopify/react-native-skia';
+import { Dimensions, StyleSheet, View, ActivityIndicator, ScrollView, Text } from 'react-native';
+import { LineChart } from "react-native-gifted-charts"
 import { BlurView } from 'expo-blur';
-import { scaleLinear } from 'd3-scale';
-import { line, curveCardinal } from 'd3-shape';
+
+const formatDateTime = (dateTime) => {
+  const date = new Date(dateTime);
+  const formattedDate = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(date);
+  const formattedTime = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: 'numeric', hour12: true }).format(date);
+  return { formattedDate, formattedTime };
+};
 
 const TemperatureGraph = () => {
   const [forecastData, setForecastData] = useState(null);
@@ -33,56 +38,72 @@ const TemperatureGraph = () => {
   }
 
   const temperatures = forecastData.list.map(item => item.main.temp - 273.15);
-  const labels = forecastData.list.map(item => item.dt_txt.split(' ')[1].slice(0, 5)); // Get time in HH:MM format
-
-  const chartWidth = Dimensions.get('window').width * 3;
-  const chartHeight = 200;
-  const padding = 20;
-
-  const xScale = scaleLinear()
-    .domain([0, temperatures.length - 1])
-    .range([padding, chartWidth - padding]);
-
-  const yScale = scaleLinear()
-    .domain([Math.min(...temperatures), Math.max(...temperatures)])
-    .range([chartHeight - padding, padding]);
-
-  const lineGenerator = line()
-    .x((d, i) => xScale(i))
-    .y(d => yScale(d))
-    .curve(curveCardinal);
-
-  const pathData = lineGenerator(temperatures);
+  const pop = forecastData.list.map(item => item.pop * 20)
+  const labels = forecastData.list.map(item => formatDateTime(item.dt_txt).formattedDate);
+  
+  const lineData = temperatures.map((temp, index) => ({ value: temp, date: labels[index] }));
+  const lineData2 = pop.map((p, index) => ({ value: p, date: labels[index] }));
 
   return (
     <BlurView style={styles.container} tint='dark' intensity={50}>
-      <ScrollView horizontal contentContainerStyle={styles.scrollContainer} showsHorizontalScrollIndicator={false}>
-        <Canvas style={{ width: chartWidth, height: chartHeight }}>
-          <Group>
-            <Path path={pathData} color="lightgray" style="stroke" strokeWidth={2} />
-            {temperatures.map((temp, index) => (
-              <Text
-                key={`label-${index}`}
-                x={xScale(index) - 10} 
-                y={chartHeight - 10} 
-                text={labels[index]}
-                color="white"
-                size={10}
-              />
-            ))}
-            {temperatures.map((temp, index) => (
-              <Text
-                key={`temp-${index}`}
-                x={xScale(index) - 10} 
-                y={yScale(temp) - 10} 
-                text={`${temp.toFixed(1)}°C`}
-                color="white"
-                size={10}
-              />
-            ))}
-          </Group>
-        </Canvas>
-      </ScrollView>
+      <Text></Text>
+        <LineChart
+            areaChart
+            curved
+            rotateLabel
+            data={lineData}
+            data2={lineData2}
+            xAxisLabelTexts={labels}
+            height={180}
+            hideYAxisText
+            showStripOnFocus
+            hideAxesAndRules
+            spacing={44}
+            xAxisLabelTextStyle={{color: 'lightgray'}}
+            initialSpacing={0}
+            color1="orange"
+            color2="#706bff"
+            textColor1="green"
+            hideDataPoints
+            dataPointsColor1="blue"
+            dataPointsColor2="red"
+            startFillColor1="orange"
+            startFillColor2="#706bff"
+            startOpacity={0.8}
+            endOpacity={0}
+            pointerConfig={{
+              pointerStripHeight: 180,
+              pointerStripColor: 'lightgray',
+              pointerStripWidth: 1,
+              pointerColor: 'lightgray',
+              radius: 4,
+              pointerLabelWidth: 100,
+              pointerLabelHeight: 90,
+              activatePointersOnLongPress: true,
+              autoAdjustPointerLabelPosition: false,
+              pointerLabelComponent: items => {
+                return (
+                  <View
+                    style={{
+                      height: 90,
+                      width: 80,
+                      justifyContent: 'center',
+                      marginTop: 40,
+                      marginLeft: 10,
+                    }}>
+                    <Text style={{color: 'white', fontSize: 14, marginBottom:6,textAlign:'center'}}>
+                      {items[0].date}
+                    </Text>
+                    <View style={{paddingHorizontal:14,paddingVertical:6, borderRadius:16, backgroundColor:'white'}}>
+                    <Text style={{ fontWeight: 'bold', textAlign: 'center' }}>
+                      {`${items[0].value.toFixed(1)} ℃ ${items[1].value.toFixed(1)}%`}
+                    </Text>
+                    </View>
+                  </View>
+                );
+              },
+            }}
+            />
     </BlurView>
   );
 };
@@ -95,7 +116,8 @@ const styles = StyleSheet.create({
   },
   container: {
     overflow: 'hidden',
-    marginBottom: 20,
+    paddingVertical: 20,
+    paddingHorizontal: 10,
     width: '100%',
     borderRadius: 24,
   },
