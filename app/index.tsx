@@ -1,44 +1,51 @@
-import { BlurView } from 'expo-blur';
-import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Image, ActivityIndicator, ImageBackground, TextInput, SafeAreaView, ScrollView, TouchableOpacity, FlatList, Dimensions, Alert } from 'react-native';
-import Forcast from './forcast';
-import TemperatureGraph from './graph';
-import axios from 'axios';
-import Ionicons from '@expo/vector-icons/Ionicons';
+import { BlurView } from 'expo-blur'
+import React, { useState, useEffect, useRef } from 'react'
+import { View, Text, StyleSheet, Image, ActivityIndicator, ImageBackground, TextInput, SafeAreaView, ScrollView, TouchableOpacity, FlatList, Dimensions, Alert } from 'react-native'
+import Forcast from './forcast'
+import TemperatureGraph from './graph'
+import axios from 'axios'
+import Ionicons from '@expo/vector-icons/Ionicons'
 
 const YourComponent = () => {
-  const [weatherData, setWeatherData] = useState(null);
-  const [query, setQuery] = useState('');
-  const [locations, setLocations] = useState([]);
-  const [selectedLocation, setSelectedLocation] = useState('Bengaluru');
-  const [loading, setLoading] = useState(false);
-  const screenWidth = Dimensions.get('window').width;
-  const [activeSlide, setActiveSlide] = useState(0);
-  const [activeSlide1, setActiveSlide1] = useState(0);
+  const [weatherData, setWeatherData] = useState(null)
+  const [query, setQuery] = useState('')
+  const [locations, setLocations] = useState([])
+  const [selectedLocation, setSelectedLocation] = useState('Bengaluru')
+  const [loading, setLoading] = useState(false)
+  const screenWidth = Dimensions.get('window').width
+  const [activeSlide, setActiveSlide] = useState(0)
+  const [activeSlide1, setActiveSlide1] = useState(0)
+  const [date, setDate] = useState('Today')
 
   const handleScroll = (event) => {
-    const slideIndex = Math.round(event.nativeEvent.contentOffset.x / screenWidth);
+    const slideIndex = Math.round(event.nativeEvent.contentOffset.x / (screenWidth*0.9 - 30));
     setActiveSlide(slideIndex);
-  };
+  }
 
   const handleScroll1 = (event) => {
-    const slideIndex = Math.round(event.nativeEvent.contentOffset.x / screenWidth);
+    const slideIndex = Math.round(event.nativeEvent.contentOffset.x / (screenWidth*0.9 - 30));
     setActiveSlide1(slideIndex);
-  };
-  
-  const formatTime = (time) => {
-    const date = new Date(time * 1000);
-
-    const hours = date.getHours();
-    const minutes = date.getMinutes();
-    const period = hours >= 12 ? 'PM' : 'AM';
-    const formattedHours = hours % 12 === 0 ? 12 : hours % 12;
-    const formattedMinutes = minutes < 10 ? '0' + minutes : minutes;
-
-    const TimeString = `${formattedHours}:${formattedMinutes} ${period}`;
-
-    return TimeString;
 }
+
+const formatDateTime = (timestamp) => {
+  
+  const date = new Date(timestamp);
+  const month = date.toLocaleString('default', { month: 'short' });
+  const day = date.getDate();
+  const formattedDate = `${month} ${day}`;
+  let hours = date.getHours();
+  const minutes = date.getMinutes();
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12;
+  hours = hours ? hours : 12; 
+
+  const formattedTime = `${hours}:${minutes < 10 ? '0' : ''}${minutes} ${ampm}`;
+
+  return {
+      formattedDate,
+      formattedTime
+  };
+};
 
   const fetchLocations = async (searchQuery) => {
     if (searchQuery.length < 3) {
@@ -61,7 +68,7 @@ const YourComponent = () => {
   const fetchData = async (Name) => {
     try {
       setLoading(true);
-      const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${Name}&appid=45c03265e187efa67c55bb6b1f4d186d`);
+      const response = await fetch(`https://api.weatherapi.com/v1/forecast.json?key=503fb227aaa9419190d190929243105&q=${Name}&days=10&aqi=yes&alerts=no`);
       const data = await response.json();
       if (data.cod === "404") {
         Alert.alert("Error", "City not found");
@@ -75,7 +82,7 @@ const YourComponent = () => {
     }
   }
   const handleSelectLocation = (location) => {
-    setSelectedLocation(location.name);
+    setSelectedLocation(`${location.name}, ${location.region}, ${location.country}`);
     setLocations([]);
     setQuery('');
   }
@@ -84,31 +91,31 @@ const YourComponent = () => {
     fetchData(selectedLocation)
   }, [selectedLocation]);
 
-  const getLocalIcon = (iconCode: any) => {
+  const getLocalIcon = (iconCode, is_day) => {
     const iconMap = {
-      '01d': require('../assets/images/01d.png'),
-      '01n': require('../assets/images/01n.png'),
-      '02d': require('../assets/images/02d.png'),
-      '02n': require('../assets/images/02n.png'),
-      '03d': require('../assets/images/03d.png'),
-      '03n': require('../assets/images/03n.png'),
-      '04d': require('../assets/images/04d.png'),
-      '04n': require('../assets/images/04n.png'),
-      '09d': require('../assets/images/09d.png'),
-      '09n': require('../assets/images/09n.png'),
-      '10d': require('../assets/images/10d.png'),
-      '10n': require('../assets/images/10n.png'),
-      '11d': require('../assets/images/11d.png'),
-      '11n': require('../assets/images/11n.png'),
-      '13d': require('../assets/images/13d.png'),
-      '13n': require('../assets/images/13d.png'),
-      '50d': require('../assets/images/50d.png'),
-      '50n': require('../assets/images/50n.png')
+      '1000': is_day==1 ? require('../assets/images/01d.png') : require('../assets/images/01n.png'),
+      '1003': is_day==1 ? require('../assets/images/02d.png') : require('../assets/images/02n.png'),
+      '1006': is_day==1 ? require('../assets/images/04d.png') : require('../assets/images/04n.png'),
+      '1009': is_day==1 ? require('../assets/images/03d.png') : require('../assets/images/03n.png'),
+      '1030': is_day==1 ? require('../assets/images/50d.png') : require('../assets/images/50n.png'),
+      '1063': is_day==1 ? require('../assets/images/10d.png') : require('../assets/images/10n.png'),
+      '1240': is_day==1 ? require('../assets/images/10d.png') : require('../assets/images/10n.png'),
+      '1180': is_day==1 ? require('../assets/images/10d.png') : require('../assets/images/10n.png'),
+      '1150': is_day==1 ? require('../assets/images/09d.png') : require('../assets/images/09n.png'),
+      '1183': is_day==1 ? require('../assets/images/09d.png') : require('../assets/images/09n.png'),
+      '1087': is_day==1 ? require('../assets/images/1087.png') : require('../assets/images/11n.png'),
+      '1153': is_day==1 ? require('../assets/images/09d.png') : require('../assets/images/09n.png'),
+      '1135': is_day==1 ? require('../assets/images/50d.png') : require('../assets/images/50n.png'),
+      '1189': is_day==1 ? require('../assets/images/09d.png') : require('../assets/images/09n.png'),
+      '1195': is_day==1 ? require('../assets/images/09d.png') : require('../assets/images/09n.png'),
+      '1276': is_day==1 ? require('../assets/images/11d.png') : require('../assets/images/11n.png'),
+      '1273': is_day==1 ? require('../assets/images/1087.png') : require('../assets/images/11n.png'),
+      '1216': is_day==1 ? require('../assets/images/13d.png') : require('../assets/images/13d.png'),
     }
     return iconMap[iconCode];
   }
 
-  const backgroundImage = weatherData && weatherData.weather[0].icon.includes('d')
+  const backgroundImage = weatherData && weatherData.current.is_day==1
     ? require('../assets/images/image2.png')
     : require('../assets/images/image.png');
     
@@ -161,29 +168,36 @@ const YourComponent = () => {
             intensity={50}
             experimentalBlurMethod='dimezisBlurView'
           >
-            <Text style={styles.location}>{(weatherData.name)}, {(weatherData.sys.country)}</Text>
+            <Text style={styles.location}>{weatherData.location.name}, {(weatherData.location.region).split(' ').map(word => word.charAt(0))}, {weatherData.location.country}</Text>
             <FlatList
             contentContainerStyle={{marginBottom: -10}}
               data={[
                 {
                   type: 'weather',
-                  icon: weatherData.weather[0].icon, 
-                  temp: `${(weatherData.main.temp - 273.15).toFixed(1)}°C`,
-                  desc: weatherData.weather[0].description
+                  icon: `${weatherData.current.condition.code}`, 
+                  temp: `${weatherData.current.temp_c}°C`,
+                  desc: `${weatherData.current.condition.text}`
                 },
                 {
                   type: 'sun',
                   icon1: require('../assets/images/sunrise.png'),
                   icon2: require('../assets/images/sunset.png'), 
-                  sunriseT: formatTime(weatherData.sys.sunrise),
-                  sunsetT: formatTime(weatherData.sys.sunset),
+                  sunriseT: `${weatherData.forecast.forecastday[0].astro.sunrise}`,
+                  sunsetT: `${weatherData.forecast.forecastday[0].astro.sunset}`
+                },
+                {
+                  type: 'moon',
+                  icon1: require('../assets/images/moonrise.png'),
+                  icon2: require('../assets/images/moonset.png'), 
+                  moonrise: `${weatherData.forecast.forecastday[0].astro.moonrise}`,
+                  moonset: `${weatherData.forecast.forecastday[0].astro.moonset}`
                 },
                 {
                   type: 'temp',
                   icon1: require('../assets/images/high.png'),
                   icon2: require('../assets/images/low.png'), 
-                  maxTemp: `${(weatherData.main.temp_max - 273.15).toFixed(1)}°C`,
-                  minTemp: `${(weatherData.main.temp_min - 273.15).toFixed(1)}°C`,
+                  maxTemp: `${weatherData.forecast.forecastday[0].day.maxtemp_c}°C`,
+                  minTemp: `${weatherData.forecast.forecastday[0].day.mintemp_c}°C`
                 }
               ]}
               horizontal
@@ -196,7 +210,7 @@ const YourComponent = () => {
                   <View style={{width: screenWidth * 0.9 - 30, alignItems: 'center', justifyContent: 'center'}}>
                   <Image
                     style={styles.weatherIcon}
-                    source={getLocalIcon(item.icon)}
+                    source={getLocalIcon(item.icon, weatherData.current.is_day)}
                   />
                   <Text style={styles.temperature}>{item.temp}</Text>
                   <Text style={styles.weatherDescription}>{item.desc}</Text>
@@ -223,6 +237,32 @@ const YourComponent = () => {
                     <View style={{ alignItems: 'center' }}>
                       <Text style={styles.detailLabel}>Sunset</Text>
                       <Text style={{fontSize: 24,color: '#ffffff', fontWeight: 'bold'}}>{item.sunsetT}</Text>
+                      </View>
+                    </View>
+                  </View>
+                )
+              }
+              else if(item.type=='moon') {
+                return (
+                  <View style={{ width: screenWidth * 0.9 - 30, alignItems: 'center', justifyContent: 'center' }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center'}}>
+                      <Image
+                        style={{ width: 100, height: 100, marginRight: 60 }}
+                        source={item.icon1}
+                      />
+                      <Image
+                        style={{ width: 100, height: 100 }}
+                        source={item.icon2}
+                      />
+                    </View>
+                    <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
+                      <View style={{ alignItems: 'center', marginRight: 60}}>
+                        <Text style={styles.detailLabel}>Moonrise</Text>
+                        <Text style={{fontSize: 24,color: '#ffffff', fontWeight: 'bold'}}>{item.moonrise}</Text>
+                      </View>
+                    <View style={{ alignItems: 'center' }}>
+                      <Text style={styles.detailLabel}>Moonset</Text>
+                      <Text style={{fontSize: 24,color: '#ffffff', fontWeight: 'bold'}}>{item.moonset}</Text>
                       </View>
                     </View>
                   </View>
@@ -256,10 +296,11 @@ const YourComponent = () => {
               }
               }}
             />
-              <View style={[styles.dotContainer, {marginBottom: 5}]}>
+              <View style={[styles.dotContainer, {marginBottom: 8}]}>
                 <View style={[styles.dot, activeSlide1 === 0 && styles.activeDot]} />
                 <View style={[styles.dot, activeSlide1 === 1 && styles.activeDot]} />
                 <View style={[styles.dot, activeSlide1 === 2 && styles.activeDot]} />
+                <View style={[styles.dot, activeSlide1 === 3 && styles.activeDot]} />
               </View>
             <View style={styles.detailsContainer}>
             <FlatList 
@@ -279,21 +320,21 @@ const YourComponent = () => {
                     <View style={styles.detailItem}>
                       <Image style={{height: 20, width: 20}} source={require('../assets/images/temp.png')}/>
                       <Text style={styles.detailLabel}>Feels Like</Text>
-                      <Text style={styles.detailValue}>{(weatherData.main.feels_like - 273.15).toFixed(1)}°C</Text>
+                      <Text style={styles.detailValue}>{weatherData.current.feelslike_c}°C</Text>
                     </View>
                     <View style={styles.detailItem}>
                       <Image style={{height: 20, width: 20}} source={require('../assets/images/water-drop.png')}/>
                       <Text style={styles.detailLabel}>Humidity</Text>
-                      <Text style={styles.detailValue}>{weatherData.main.humidity}%</Text>
+                      <Text style={styles.detailValue}>{weatherData.current.humidity}%</Text>
                     </View>
                     <View style={styles.detailItem}>
                       <Image style={{height: 20, width: 20}} source={require('../assets/images/wind.png')} tintColor={'white'}/>
                       <Text style={styles.detailLabel}>Wind Speed</Text>
-                      <Text style={styles.detailValue}>{weatherData.wind.speed} m/s</Text>
+                      <Text style={styles.detailValue}>{weatherData.current.wind_kph} km/h</Text>
                       </View>
                   </View>
                 )
-              }else{
+              }else {
                 return(
                   <View style={{
                     flexDirection: 'row',
@@ -303,17 +344,17 @@ const YourComponent = () => {
                     <View style={styles.detailItem}>
                       <Image style={{height: 20, width: 20}} source={require('../assets/images/pressure.png')}/>
                       <Text style={styles.detailLabel}>Pressure</Text>
-                      <Text style={styles.detailValue}>{(weatherData.main.pressure*0.02953).toFixed(1)} inHg</Text>
+                      <Text style={styles.detailValue}>{weatherData.current.pressure_in} inHg</Text>
                     </View>
                     <View style={styles.detailItem}>
                       <Image style={{height: 20, width: 20}} source={require('../assets/images/visibility.png')}/>
                       <Text style={styles.detailLabel}>Visibility</Text>
-                      <Text style={styles.detailValue}>{weatherData.visibility/1000} km</Text>
+                      <Text style={styles.detailValue}>{weatherData.current.vis_km} km</Text>
                     </View>
                     <View style={styles.detailItem}>
                       <Image style={{height: 20, width: 20}} source={require('../assets/images/04d.png')}/>
                       <Text style={styles.detailLabel}>Cloudiness</Text>
-                      <Text style={styles.detailValue}>{weatherData.clouds.all}%</Text>
+                      <Text style={styles.detailValue}>{weatherData.current.cloud} %</Text>
                       </View>
                   </View>
                 )
@@ -326,11 +367,13 @@ const YourComponent = () => {
               </View>
             </View>
           </BlurView>
-          <Text style={styles.title}>5-Day Forecasts</Text>
+          <Text style={styles.title}>10-Day Forecasts ({date})</Text>
           <View style={{flex: 1, borderRadius: 24, overflow:'hidden', width: '90%', marginBottom: 5}}>
           <ScrollView showsVerticalScrollIndicator={false}>
-              <Forcast location={selectedLocation}/>
-              <TemperatureGraph />
+              <Forcast forecastday={weatherData.forecast.forecastday} 
+                onVisibleTimeChange={(time) => setDate(weatherData.location.localtime.split(' ')[0]==time.split(' ')[0] ? 'Today' : formatDateTime(time).formattedDate) }
+              />
+              <TemperatureGraph forecastday={weatherData.forecast.forecastday} />
           </ScrollView>
           </View>
         </ImageBackground>

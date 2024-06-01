@@ -2,32 +2,34 @@ import React, { useEffect, useState } from 'react';
 import { Dimensions, StyleSheet, View, ActivityIndicator, ScrollView, Text } from 'react-native';
 import { LineChart } from "react-native-gifted-charts"
 import { BlurView } from 'expo-blur';
+import { screenWidth } from 'react-native-gifted-charts/src/utils';
 
-const formatDateTime = (dateTime) => {
-  const date = new Date(dateTime);
-  const formattedDate = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(date);
-  const formattedTime = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: 'numeric', hour12: true }).format(date);
-  return { formattedDate, formattedTime };
+const formatDateTime = (timestamp) => {
+  
+  const date = new Date(timestamp);
+  const month = date.toLocaleString('default', { month: 'short' });
+  const day = date.getDate();
+  const formattedDate = `${month} ${day}`;
+  let hours = date.getHours();
+  const minutes = date.getMinutes();
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12;
+  hours = hours ? hours : 12; 
+
+  const formattedTime = `${hours}:${minutes < 10 ? '0' : ''}${minutes} ${ampm}`;
+
+  return {
+      formattedDate,
+      formattedTime
+  };
 };
 
-const TemperatureGraph = () => {
-  const [forecastData, setForecastData] = useState(null);
+const TemperatureGraph = ({forecastday}) => {
+  const [forecastData, setForecastData] = useState([]);
 
   useEffect(() => {
-    const fetchWeatherData = async () => {
-      try {
-        const response = await fetch(
-          'https://api.openweathermap.org/data/2.5/forecast?q=Bengaluru&appid=45c03265e187efa67c55bb6b1f4d186d'
-        );
-        const data = await response.json();
-        setForecastData(data);
-      } catch (error) {
-        console.error('Error fetching weather data: ', error);
-      }
-    };
-
-    fetchWeatherData();
-  }, []);
+    setForecastData(forecastday)
+  }, [forecastday]);
 
   if (!forecastData) {
     return (
@@ -37,9 +39,9 @@ const TemperatureGraph = () => {
     );
   }
 
-  const temperatures = forecastData.list.map(item => item.main.temp - 273.15);
-  const pop = forecastData.list.map(item => item.pop * 20)
-  const labels = forecastData.list.map(item => formatDateTime(item.dt_txt).formattedDate);
+  const temperatures = forecastData.map(item => item.day.avgtemp_c);
+  const pop = forecastData.map(item => item.day.daily_chance_of_rain * 0.2)
+  const labels = forecastData.map(item => formatDateTime(item.date).formattedDate);
   
   const lineData = temperatures.map((temp, index) => ({ value: temp, date: labels[index] }));
   const lineData2 = pop.map((p, index) => ({ value: p, date: labels[index] }));
@@ -56,17 +58,15 @@ const TemperatureGraph = () => {
             xAxisLabelTexts={labels}
             height={180}
             hideYAxisText
-            showStripOnFocus
             hideAxesAndRules
-            spacing={44}
+            spacing={screenWidth/10}
             xAxisLabelTextStyle={{color: 'lightgray'}}
             initialSpacing={0}
             color1="orange"
             color2="#706bff"
             textColor1="green"
-            hideDataPoints
-            dataPointsColor1="blue"
-            dataPointsColor2="red"
+            dataPointsColor1="orange"
+            dataPointsColor2="#706bff"
             startFillColor1="orange"
             startFillColor2="#706bff"
             startOpacity={0.8}
@@ -96,7 +96,7 @@ const TemperatureGraph = () => {
                     </Text>
                     <View style={{paddingHorizontal:14,paddingVertical:6, borderRadius:16, backgroundColor:'white'}}>
                     <Text style={{ fontWeight: 'bold', textAlign: 'center' }}>
-                      {`${items[0].value.toFixed(1)} ℃ ${items[1].value.toFixed(1)}%`}
+                      {`${items[0].value.toFixed(1)} ℃ ${items[1].value.toFixed(1)*10/2}%`}
                     </Text>
                     </View>
                   </View>
