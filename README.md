@@ -10,10 +10,10 @@
 - #### API: www.weatherapi.com
 
 ## Screenshots
-![1](https://github.com/kartixharma/SkySnap/assets/112623116/23e14876-77c5-4b9e-affc-b19ca1c27abe)
-![2](https://github.com/kartixharma/SkySnap/assets/112623116/6259c804-f8b5-4717-828a-25e7a7b1130d)
-![3](https://github.com/kartixharma/SkySnap/assets/112623116/7f161f54-19e6-4ea1-814b-09a70771458e)
-![4](https://github.com/kartixharma/SkySnap/assets/112623116/56157f5c-3141-4ba4-ba1d-03373e3c5ce3)
-![5](https://github.com/kartixharma/SkySnap/assets/112623116/8f580125-a74d-4ff0-ad3a-19e1db894ddd)
-![1](https://github.com/kartixharma/SkySnap/assets/112623116/5fe5a024-a9ea-47b2-8172-e1579f26e9ba)
-![2](https://github.com/kartixharma/SkySnap/assets/112623116/f83a2376-2441-4c21-bbc8-c7a4c70ba00b)
+![](https://i.imgur.com/BPgvjEdl.png)
+![](https://i.imgur.com/4nVFCKol.png)
+![](https://i.imgur.com/gm4JsPpl.png)
+![](https://i.imgur.com/3SU0dsSl.png)
+![](https://i.imgur.com/SBpwUunl.png)
+![](https://i.imgur.com/X6YDIFZl.png)
+![](https://i.imgur.com/n89yXxTl.png)
